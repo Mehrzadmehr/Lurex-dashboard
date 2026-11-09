@@ -1,0 +1,25 @@
+name: sync-lurex
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: node scripts/sync.mjs
+      - name: commit data
+        run: |
+          git config user.name "lurex-sync"
+          git config user.email "sync@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || git commit -m "sync state"
+          git push
